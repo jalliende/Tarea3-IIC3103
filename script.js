@@ -6,32 +6,46 @@ var marcadores = {};
 var posiciones= {};
 var path = "";
 var infowindow;
-
-function getRandomColor() {
-  var letters = "0123456789ABCDEF";
-  var color = "#";
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
-
+var socket;
 
 function createMap() {
-  const socket = io('wss://tarea-3-websocket.2021-1.tallerdeintegracion.cl', {
+  socket = io('wss://tarea-3-websocket.2021-1.tallerdeintegracion.cl', {
     path: '/flights'
   });
 
   socket.emit("FLIGHTS");
+  //socket.emit("CHAT", {"name": "nombre", "message": "mensaje"});
   socket.on("FLIGHTS", Vuelos);
   socket.on("POSITION", Posiciones);
+  socket.on("CHAT", Chat);
+  
+    
   var options = { center: { lat: -20.654, lng: -10.383 }, zoom: 2 };
   map = new google.maps.Map(document.getElementById("map"), options);
   infowindow = new google.maps.InfoWindow();
 }
 
 function Posiciones(data) {
-  moveMarker(marcadores[data["code"]], data["position"]);
+    if (posiciones.hasOwnProperty(data["code"])) {
+    var trayecto = [posiciones[data["code"]], { lat: data["position"][0], lng: data["position"][1] } ];
+    var linea_trayecto = new google.maps.Polyline({
+      path: trayecto,
+      geodesic: true,
+      strokeColor: colores[data["code"]],
+      strokeOpacity: 1.0,
+      strokeWeight: 2
+    });
+
+    linea_trayecto.setMap(map);
+    posiciones[data["code"]] = {lat: data["position"][0], lng: data["position"][1]};
+    
+    moveMarker(marcadores[data["code"]], data["position"]);
+  } 
+  else
+  {
+    posiciones[data["code"]] = {lat: data["position"][0], lng: data["position"][1]};
+    moveMarker(marcadores[data["code"]], data["position"]);
+  }
 }
 
 function Vuelos(data) {
@@ -57,25 +71,21 @@ function Vuelos(data) {
       vuelos[element["code"]] = 1;
 
       var infovuelo =
-        "<h6>Codigo: " +
-        element["code"] +
-        "</h6>" +
-        "<h6>\nAerolinea: " +
-        element["airline"] +
-        "</h6>" +
-        "<h6>\nOrigen: " +
-        element["origin"] +
-        "</h6>" +
-        "<h6>\nDestino: " +
-        element["destination"] +
-        "</h6>" +
-        "<h6>\nAvion:  " +
-        element["plane"] +
-        "</h6>" +
-        "<h6>\nAsientos: " +
-        element["seats"] +
-        "</h6>";
+        "<h6>Codigo: " + element["code"] + "</h6>" +
+        "<h6>\nAerolinea: " + element["airline"] + "</h6>" +
+        "<h6>\nOrigen: " + element["origin"] + "</h6>" +
+        "<h6>\nDestino: " + element["destination"] + "</h6>" +
+        "<h6>\nAvion:  " + element["plane"] + "</h6>" +
+        "<h6>\nAsientos: " + element["seats"] + "</h6>";
 
+      var pasajeros = "<h6>Pasajeros: \n </h6> " ;
+
+      element["passengers"].forEach(function(pasajero)
+      {
+        pasajeros = pasajeros + "<h6>" + pasajero["name"] + ", "+ pasajero["age"] +   "\n</h6>";
+      });
+
+      var infototal = infovuelo + pasajeros;
       var numero = (Object.keys(vuelos).length % 2) + 1;
       var image = path + "plane" + numero.toString() + ".png";
       var marcador = new google.maps.Marker({
@@ -86,16 +96,36 @@ function Vuelos(data) {
       marcadores[element["code"]] = marcador;
 
       google.maps.event.addListener(marcador, "mouseover", function() {
-        infowindow.setContent(infovuelo);
+        infowindow.setContent(infototal);
         infowindow.open(map, this);
       });
     }
   });
 }
 
+function Chat(data) {
+  let ele = document.getElementById('texto_chat');
+  ele.innerHTML += "<h5>" +data["name"] + " " +"(" + data["date"] + "): \n" + data["message"]+ "\n <h5>" ;
+}
 
 function moveMarker(Marker, position) {
   if (Marker) {
     Marker.setPosition(new google.maps.LatLng(position[0], position[1]));
   }
+}
+
+function getRandomColor() {
+  var letters = "0123456789ABCDEF";
+  var color = "#";
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+function submitData(){
+  var nickname = document.getElementById("nname").value;
+  var mensaje = document.getElementById("mensaje").value;
+  socket.emit("CHAT", {"name": nickname, "message": mensaje});
+  document.getElementById("mensaje").value ="";
 }
