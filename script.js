@@ -64,7 +64,7 @@ function Vuelos(data) {
         path: coordenadas,
         geodesic: true,
         strokeColor: colores[element["code"]],
-        strokeOpacity: 0.2,
+        strokeOpacity: 0.5,
         strokeWeight: 4
       });
       ruta.setMap(map);
