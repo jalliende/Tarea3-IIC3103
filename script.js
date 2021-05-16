@@ -14,7 +14,6 @@ function createMap() {
   });
 
   socket.emit("FLIGHTS");
-  //socket.emit("CHAT", {"name": "nombre", "message": "mensaje"});
   socket.on("FLIGHTS", Vuelos);
   socket.on("POSITION", Posiciones);
   socket.on("CHAT", Chat);
