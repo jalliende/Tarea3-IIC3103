@@ -67,6 +67,27 @@ function Vuelos(data) {
         strokeOpacity: 0.5,
         strokeWeight: 4
       });
+      
+      var centre_o = new google.maps.Circle({
+        strokeColor: colores[element["code"]],
+        strokeWeight: 2,
+        fillColor: colores[element["code"]],
+        map,
+        center: { lat: origin[0], lng: origin[1] },
+        radius: 3000,
+      });
+
+      var centre_d = new google.maps.Circle({
+        strokeColor: colores[element["code"]],
+        strokeWeight: 2,
+        fillColor: colores[element["code"]],
+        map,
+        center: { lat: destination[0], lng: destination[1] },
+        radius: 3000,
+      });
+      
+      centre_o.setMap(map);
+      centre_d.setMap(map);
       ruta.setMap(map);
       vuelos[element["code"]] = 1;
 
@@ -105,7 +126,8 @@ function Vuelos(data) {
 
 function Chat(data) {
   let ele = document.getElementById('texto_chat');
-  ele.innerHTML += "<h5>" +data["name"] + " " +"(" + data["date"] + "): \n" + data["message"]+ "\n <h5>" ;
+  var date = new Date( data["date"]);
+  ele.innerHTML += "<h5>" +data["name"] + " " +"(" + date.toGMTString() + "): \n" + data["message"]+ "\n <h5>" ;
 }
 
 function moveMarker(Marker, position) {
@@ -129,3 +151,5 @@ function submitData(){
   socket.emit("CHAT", {"name": nickname, "message": mensaje});
   document.getElementById("mensaje").value ="";
 }
+
+//codigo referenciado de: https://github.com/dalliende/MapsTarea4
