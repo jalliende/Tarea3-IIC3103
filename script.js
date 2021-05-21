@@ -127,6 +127,8 @@ function Chat(data) {
   let ele = document.getElementById('texto_chat');
   var date = new Date( data["date"]);
   ele.innerHTML += "<h5>" +data["name"] + " " +"(" + date.toGMTString() + "): \n" + data["message"]+ "\n <h5>" ;
+  ele.scrollTo(0, ele.scrollHeight);
+
 }
 
 function moveMarker(Marker, position) {
