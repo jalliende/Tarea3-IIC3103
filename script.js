@@ -152,5 +152,3 @@ function submitData(){
   socket.emit("CHAT", {"name": nickname, "message": mensaje});
   document.getElementById("mensaje").value ="";
 }
-
-//codigo referenciado de: https://github.com/dalliende/MapsTarea4
